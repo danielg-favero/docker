@@ -280,3 +280,91 @@ Caso nenhum recurso do docker esteja sendo utilizado, como containers e imagens,
 ```bash
 docker system prune
 ```
+
+## Volumes
+
+Uma forma prática de persistir dados (fazer backup) em aplicações para não depender de um container (Todo dado criado em um container é salvo nele, quando ele é removido, todos os dados também são).
+
+### Tipos de volume
+
+- Anonymous: Volumes com nomes aleatórios (Criados com a flag `-v`)
+
+```bash
+docker run -v /<diretorio do volume anonimo>
+```
+
+Ex:
+
+```bash
+docker run -d -p 80:80 --name php-messages-container -v /data php-messages 
+```
+
+- Named: Volumes com nomes definidos
+
+```bash
+docker run -v <nome do volume>:/<diretorio do volume>
+```
+
+Ex:
+
+```bash
+docker run -d -p 80:80 --name php-messages-container -v php-volume:/var/www/html/messages --rm php-messages
+```
+
+> O diretório do volume precisa ser o mesmo do `WORKDIR` do `Dockerfile`
+
+- Bind Mounts: Forma de salvar na máquina local, sem gerenciamento do docker.
+
+```bash
+docker run <diretorio da maquina local>:/<diretorio do volume>
+```
+
+Ex:
+
+```bash
+docker run -d -p 80:80 --name php-messages-container -v /Users/danielg.favero/Documents/estudos/docker/2-volumes/messages:/var/www/html/messages --rm php-messages
+```
+
+- Apenas para leitura: Nesse tipo de volume não é possível escrever nenhum arquivo
+
+```bash
+docker run <diretorio da maquina local>:/<diretorio do volume>:ro
+```
+
+> `:ro` é abreviação para *Read Only*
+
+### Criar volume manualmente
+
+É possível criar volume sem precisar rodar um container
+
+```bash
+docker volume create <nome do volume>
+```
+
+Posteriormente é possível atrelar esse volume a um container.
+
+### Listar volumes
+
+```bash
+docker volume ls
+```
+
+### Inspecionando volume
+
+```bash
+docker volume inspect <nome do volume>
+```
+
+### Removendo volumes
+
+```bash
+docker volume rm <nome do volume>
+```
+
+> Remover um volume REMOVE TODOS OS DADOS dentro dele
+
+É possível também remover todos os volumes não utilizados
+
+```bash
+docker volume prune
+```
