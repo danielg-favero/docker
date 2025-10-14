@@ -368,3 +368,88 @@ docker volume rm <nome do volume>
 ```bash
 docker volume prune
 ```
+
+## Networks
+
+É a forma gerenciar a conexão entre os containers do docker com outras plataformas ou até mesmo outros containers. Assim como os Volumes, eles são criados separados dos containers.
+
+### Tipos de conexão
+
+- Externa: Conexão com uma API ou servidor externo.
+- Com o host: Comunicação do container com a máquina local.
+- Entre containers: Comunicação que utiliza com um `driver` `bridge` para comunicar dois ou mais containers.
+
+### Tipos de driver
+
+- *Bridge*: É o default do Docker, utilizado quando dois ou mais containers precisam se conectar.
+- *Host*: Permite conexão do container com a máquina local.
+- *Macvlan*: Permite conexão a um container por meio de um endereço MAC.
+- *None*: Remove todas as conexões de rede de um container.
+- *Plugins*: Permite extensões para criar outras redes.
+
+### Listar redes.
+
+```bash
+docker network ls
+```
+
+> Alguns networks são criados por padrão pelo Docker para sua configuração inicial.
+
+```bash
+NETWORK ID     NAME      DRIVER    SCOPE
+da3c20a11139   bridge    bridge    local
+d9b873f523c1   host      host      local
+70f5a0873c36   none      null      local
+```
+
+### Criar rede
+
+```bash
+docker network create <nome da rede>
+```
+
+> Por padrão ela será do tipo `bridge`
+
+Para criar com um driver específico:
+
+```bash
+docker network create -d macvlan <nome da rede>
+```
+
+### Remover rede
+
+```bash
+docker network rm <nome da rede>
+```
+
+Para remover todas as redes não utilizadas:
+
+```bash
+docker network prune
+```
+
+### Conectar um container a uma rede
+
+Ao executar o container:
+
+```bash
+docker run --network <nome da rede>
+```
+
+Ou manualmente após a execução:
+
+```bash
+docker network connect <nome da rede> <nome do container>
+```
+
+### Desconectar um container
+
+```bash
+docker network disconnect <nome da rede> <nome do container>
+```
+
+### Inspecionar redes
+
+```bash
+docker network inspect <nome da rede>
+```
