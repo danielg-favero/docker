@@ -1,0 +1,36 @@
+# String
+name: "Daniel"
+last_name: Gustavo Favero # Não precis de aspas
+
+# Integer
+age: 24
+
+# Float
+currency: 150.4
+
+# Boolean
+is_admin: True    # True
+is_customer: on   # True
+is_visitor: False # False
+is_guest: off     # False
+
+# Null
+first_null_value: null
+second_null_value: ~
+
+# Objects
+first_object:
+  version: 2
+  file: "test.txt"
+  nested:
+    key: value
+
+second_object: { version: 2,  file: "test.txt", nested: { key: value } }
+
+# Lists
+first_list: [1, 2, 3, 4, 5]
+second_list:
+  - "First"
+  - 2
+  - 3.0
+  - True

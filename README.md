@@ -453,3 +453,50 @@ docker network disconnect <nome da rede> <nome do container>
 ```bash
 docker network inspect <nome da rede>
 ```
+
+## YAML
+
+É uma linguagem utilizada para arquivos de configuração, principalmente para configurar o `docker compose`. São arquivos com extensão `.yml` ou `.yaml`.
+
+### Estrutura de um arquivo `.yaml`
+
+Assim como o `python` as instruções são identificadas por identações e espaços.
+
+```yaml
+# String
+name: "Daniel"
+last_name: Gustavo Favero # Não precis de aspas
+
+# Integer
+age: 24
+
+# Float
+currency: 150.4
+
+# Boolean
+is_admin: True    # True
+is_customer: on   # True
+is_visitor: False # False
+is_guest: off     # False
+
+# Null
+first_null_value: null
+second_null_value: ~
+
+# Objects
+first_object:
+  version: 2
+  file: "test.txt"
+  nested:
+    key: value
+
+second_object: { version: 2,  file: "test.txt", nested: { key: value } }
+
+# Lists
+first_list: [1, 2, 3, 4, 5]
+second_list:
+  - "First"
+  - 2
+  - 3.0
+  - True
+```
