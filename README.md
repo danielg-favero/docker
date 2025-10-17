@@ -500,3 +500,147 @@ second_list:
   - 3.0
   - True
 ```
+
+## Docker Compose
+
+É uma ferramenta para rodar múltiplos containers usando apenas um arquivo de configuração. É semelhante a criar um arquivo `Dockerfile`.
+
+### Exemplo de arquivo compose para projeto Wordpress
+
+```yaml
+name: WordpressApp
+services:
+  db: # Container do MySQL
+    container_name: MySQL
+    image: mysql:8.0.43 # FROM mysql:8.0.43
+    command: mysqld --default_authentication_plugin=mysql_native_password
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: docker
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+      MYSQL_DATABASE: wordpress
+    ports:
+      - 3308:3306
+    networks:
+      - wordpress-network
+
+  wordpress: # Container do Wordpress
+    container_name: Wordpress
+    depends_on: # Quais serviços o container depende (ele só vai executar esse serviço após essa lista ser executada)
+      - db
+    image: wordpress:latest
+    volumes:
+      - ./config/php.conf.uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./wp-app:/var/www/html
+    environment:
+      TZ: America/Sao_Paulo
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: docker
+    ports:
+      - 80:80
+    networks:
+      - wordpress-network
+
+networks:
+    wordpress-network:
+      driver: bridge
+```
+
+### Executar um arquivo `docker-compose.yaml`
+
+```bash
+docker-compose up
+```
+
+ou para executar em background
+
+```bash
+docker-compose up -d
+```
+
+### Parar compose
+
+```bash
+docker-compose down
+```
+
+### Variáveis de ambiente no compose
+
+Para inserir variáveis de ambiente em um arquivo `docker-compose.yaml`:
+
+1. Criar um arquivo `.env`
+
+```.env
+ENV_1=1
+ENV_2=2
+...
+```
+
+2. Atualizar arquivo `docker-compose.yaml`:
+
+```yaml
+# ...
+services:
+  # ...
+  service-1:
+    # ...
+    env_file:
+      - ./.env
+    # ...
+```
+
+### Redes no compose
+
+Por padrão o docker compose cria uma rede com driver `bridge`. Mas é possível isolar redes.
+
+```yaml
+# ...
+services:
+  # ...
+  service-1:
+    # ...
+    networks:
+      - network-name
+
+# ...
+networks:
+    # ...
+    network-name:
+      driver: bridge
+    # ...
+```
+
+### Executar build de imagens ao executar o compose
+
+É preciso informar o caminho do `Dockerfile` para que seja executado o build. Nesse caso não é necessário informar a chave `image`.
+
+```yaml
+# ...
+services:
+  # ...
+  service-1:
+    # ...
+    build: <caminho-para-o-dockerfile>
+```
+
+### Bind mount no compose
+
+Para fazer alterações no projeto e persistir as alterações nos containers.
+
+```yaml
+services:
+  # ...
+  service-1:
+    # ...
+    volumes:
+      - <caminho-onde-o-bind-mount-vai-monitorar-para-verificar-alteracoes>
+```
+
+### Verificação do compose
+
+```bash
+docker-compose ps
+```

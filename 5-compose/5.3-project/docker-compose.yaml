@@ -1,0 +1,26 @@
+name: project
+services:
+  db:
+    container_name: MySQL
+    build: ./mysql/
+    env_file:
+      - ./.env
+    ports:
+      - "3306:3306"
+    networks:
+      - docker-compose
+
+  backend:
+    container_name: Backend
+    depends_on:
+      - db
+    build: ./flask/
+    ports:
+      - "8000:8000"
+    volumes:
+      - /Users/danielg.favero/Documents/estudos/docker/5-compose/5.3-project/flask:/app
+    networks:
+      - docker-compose
+
+networks:
+  docker-compose:

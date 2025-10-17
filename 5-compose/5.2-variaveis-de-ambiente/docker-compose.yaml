@@ -1,0 +1,31 @@
+name: WordpressApp
+services:
+  db: # Container do MySQL
+    container_name: MySQL
+    image: mysql:8.0.43 # FROM mysql:8.0.43
+    command: mysqld --default_authentication_plugin=mysql_native_password
+    env_file:
+      - ./.env
+    ports:
+      - 3308:3306
+    networks:
+      - wordpress-network
+
+  wordpress: # Container do Wordpress
+    container_name: Wordpress
+    depends_on: # Quais serviços o container depende (ele só vai executar esse serviço após essa lista ser executada)
+      - db
+    image: wordpress:latest
+    volumes:
+      - ./config/php.conf.uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./wp-app:/var/www/html
+    env_file:
+      - ./.env
+    ports:
+      - 80:80
+    networks:
+      - wordpress-network
+
+networks:
+  wordpress-network:
+    driver: bridge
