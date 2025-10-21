@@ -644,3 +644,181 @@ services:
 ```bash
 docker-compose ps
 ```
+
+## Orquestração de containers
+
+É o ato de conseguir **gerenciar e escalar** containers de uma aplicação. Geralmente se opta por uma arquitetura horizontal, onde pequenas máquinas ficam responsáveis por dar vazão e distribuição dos containers para os usuários. Nessa arquitetura há uma serviço que rege todos os outros.
+
+Alguns serviços que realizam orquestração: *Docker Swarm*, *Kubernetes*, etc.
+
+## Docker Swarm
+
+É uma ferramenta do Docker para orquestrar containers de forma horizontal. Os comandos são muito semelhantes aos do Docker. Por padrão, o Docker já vem com o Swarm, porém desabilitado.
+
+### Conceitos fundamentais
+
+- **Nodes**: é uma instância que participa do Swarm;
+- **Manager Node**: node que gerencia os demais nodes;
+- **Worker Node**: node que trabalha em função do manager;
+- **Service**: Um conjunto de tarefas que o **Manager Node** manda para o **Worker Node** executar;
+- **Task**: Comandos que são executados nos Nodes.
+
+### Iniciando o Swarm
+
+```bash
+docker swarm init
+```
+
+> Rodar esse comando tornará a máquina um `node` e o transformará em `manager`
+
+### Listar nodes
+
+```bash
+docker node ls
+```
+
+### Adicionar nodes
+
+```bash
+docker swarm join --token <token do node><ip>:<porta>
+```
+
+> Esse `node` já entra no swarm como `worker`
+> Ao rodar `docker swarm init` o comando de `join` já é apresentado para conectar os `nodes`
+
+### Subir um serviço (container) no Swarm
+
+```bash
+docker service create --name <nome do servico> -p <porta da aplicacao> <imagem>
+```
+
+> Isso inicia o serviço em apenas uma máquina
+
+### Listar serviços no Swarm
+
+```bash
+docker service ls
+```
+
+> Apenas o `node` `manager` tem acesso a essa informação
+
+### Remover serviço
+
+```bash
+docker service rm <nome ou id do serviço>
+```
+
+### Replicando serviços
+
+É definido na hora da criação do serviço
+
+```bash
+docker service create --name <nome do servico> -p <porta da aplicacao> --replicas <numero de replicas> <imagem>
+```
+
+Isso irá emitir uma task que irá replicar o serviço nos `workers`.
+
+> Remover um container de um `worker` faz o swarm atualizar e iniciar novamente de forma automatica o serviço naquele `worker`
+
+### Recuperar token do manager
+
+Recuperar o comando de join do `node` `manager`.
+
+```bash
+docker swarm join-token manager
+```
+
+### Verificar informações do Swarm
+
+```bash
+docker info
+```
+
+### Sair do Swarm
+
+```bash
+docker swarm leave 
+```
+
+Ou para sair de um `node` `manager`
+
+```bash
+docker swarm leave -f 
+```
+
+> O node apenas sai do Swarm, mas ele continua executando.
+
+### Remover um node
+
+```bash
+docker node rm <id do node>
+```
+
+> Caso esteja rodando um serviço, é preciso usar a flag `-f`
+
+### Inspecionar serviços
+
+```bash
+docker service inspect <id do serviço>
+```
+
+### Verificar containers rodando
+
+```bash
+docker service ps <id do serviço>
+```
+
+> É semelhante ao `docker ps -a`
+> Ele mostra informações de que `nodes` estão executando o serviço
+
+### Executando Compose no Swarm
+
+```bash
+docker stack deploy -c <arquivo do compose> <nome>
+```
+
+### Aumentar réplicas do Stack
+
+```bash
+docker service scale <nome do serviço> = <numero de replicas>
+```
+
+### Limitar um serviço a não receber mais tasks
+
+```bash
+docker node update --availability drain <id do node>
+```
+
+### Atualizar configurações de um node
+
+```bash
+docker service update --<propriedade> <novo valor da propriedade> <id do serviço>
+```
+
+Ex 1: Alterando imagem do serviço
+
+```bash
+docker service update --image <id da imagem> <id do serviço>
+```
+
+Ex 2: Alterando rede do serviço
+
+```bash
+docker service update --network <id da rede> <id do serviço>
+```
+
+> Apenas os nodes com status `ACTIVE` receberão essa atualização
+
+### Criar redes no Swarm
+
+```bash
+docker network create --driver overlay <nome da rede>
+```
+
+> Entra máquinas o driver que precisa ser utilizado é o `overlay`
+
+### Contectar um serviço a uma rede
+
+```bash
+docker service update --image <id da imagem> <id do serviço>
+```
