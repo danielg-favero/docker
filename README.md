@@ -822,3 +822,332 @@ docker network create --driver overlay <nome da rede>
 ```bash
 docker service update --image <id da imagem> <id do serviço>
 ```
+
+## Kubernetes (k8s)
+
+Assim como o Docker Swarm, é também uma ferramenta de orquestração de containers. Diferente do Swarm, o Kubernetes possui o [Minikube](https://minikube.sigs.k8s.io/docs/) para simular diversas máquinas
+
+### Conceitos fundamentias
+
+- **Control Plane**: onde é gerenciado o controle dos processos dos Nodes. É o Node Manager;
+- **Nodes**: Máquinas gerenciadas pelo **Control Plane**;
+- **Deployment**: A execução de uma imagem no **Pod**;
+- **Pod**: Um ou mais containers que estão em um **Node**. Dados gerados nos **Pods** são apagados;
+- **Services**: Serviços que expõem os Pods ao mundo externo por meio de uma rede;
+- **kubectl**: CLI do Kubernetes.
+
+### Setup do Kubernetes
+
+- [Setup Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/#install-kubectl-on-macos)
+- [Setup Minikube](https://minikube.sigs.k8s.io/docs/start/?arch=%2Fmacos%2Farm64%2Fstable%2Fbinary+download)
+
+### Iniciar o Minikube
+
+```bash
+minikube start --driver=<nome do driver>
+```
+
+O nome do driver por ser:
+- `virtualbox`
+- `hyperv`
+- `docker`
+
+### Parar o Minikube
+
+```bash
+minikue stop
+```
+
+> Ao reiniciar o computador, o Minibuke para automaticamente
+
+### Acessar a dashboard do Minikube
+
+```bash
+minikube dashboard
+```
+
+Ou para obter apenas a URL
+
+```bash
+minikube dashboard --url
+```
+
+### Subir container para o Minikube
+
+Para subir o container para o Minikube, primeiro é preciso enviar a imagem buildada para o `Docker Hub`
+
+```bash
+docker push <nome-da-imagem>
+```
+
+E em seguida criar um **Deployment**
+
+```bash
+kubectl create deployment <nome do deployment> --image=<nome da imagem>
+```
+
+O resultado do **Deployment** pode ser exibido na dashboard do Minikube
+
+### Verificar Deployments
+
+Pode-se verificar na dashboard ou por linha de comando
+
+```bash
+kubectl get deployments
+```
+
+Ou para receber mais detalhes
+
+```bash
+kubectl describe deployments
+```
+
+### Verificar Pods
+
+```bash
+kubectl get pods
+```
+
+Ou para receber mais detalhes
+
+```bash
+kubectl describe pods
+```
+
+### Verificar configurações do Kubernetes
+
+```bash
+kubectl config view
+```
+
+### Criar service
+
+```bash
+kubectl expose deployment <nome do deployment> --type=<nome do tipo> --port=<porta para expor o pod>
+```
+
+> O `type` `LoadBalancer` é o mais comum de se utilizar
+
+### Executar um service
+
+Executar um service gera um IP para acessar o serviço
+
+```bash
+minikube service <nome do service>
+```
+
+### Detalhar um service
+
+```bash
+kubectl get services
+```
+
+Ou para mais detalhes
+
+```bash
+kubectl describe services/<nome do service>
+```
+
+### Escalar uma aplicação
+
+```bash
+kubectl scale deployment/<nome do deployment> --replicas=<numero de replicas>
+```
+
+### Verificar número de replicas
+
+```bash
+kubectl get rs
+```
+
+### Diminuir número de replicas
+
+O nome dessa técnica é `Scale Down`
+
+```bash
+kubectl scale deployment/<nome do deployment> --replicas=<numero menor de replicas>
+```
+
+### Atualizar imagem de um projeto
+
+1. Subir uma nova tag da imagem no Docker Hub
+
+```bash
+docker push <nome da imagem atualizada>
+```
+
+2. Atualizar a imagem no kubernetes
+
+```bash
+kubectl set image deployment/<nome do deployment> <nome do container> = <nome da imagem atualizada>
+```
+
+### Fazer Rollback
+
+Para verificar uma alteração
+
+```bash
+kubectl rollout status deployment/<nome do deployment>
+```
+
+E para fazer o Rollback
+
+```bash
+kubectl roullout undo deployment/<nome do deployment>
+```
+
+### Excluir um service
+
+```bash
+kubectl delete service <nome do service>
+```
+
+### Excluir um deployment
+
+```bash
+kubectl delete deployment <nome do deployment>
+```
+
+### Modo declarativo do Kubernetes
+
+É quando o kubernetes é executado por meio de um arquivo de configuração (semelhante ao `docker compose`).
+
+### Exemplo de arquivo de deployment em modo declarativo
+
+```yaml
+# Versão que a ferramenta vai utilizar
+apiVersion: apps/v1
+
+# Tipo do arquivo (Deployment ou Service)
+kind: Deployment
+
+metadata:
+  name: flask-app-deployment
+
+spec:
+  # Número de replicas
+  replicas: 4
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      # Especificação dos containers
+      containers:
+        - name: flask
+          image: danielgfavero/flask-kubernetes:2
+
+```
+
+### Executar arquivo de deployment em modo declarativo
+
+```bash
+kubectl apply -f <caminho do arquivo>
+```
+
+### Parar deployment em modo declarativo
+
+```bash
+kubectl delete -f <nome do arquivo>
+```
+
+### Exemplo de arquivo de service em modo declarativo
+
+```yaml
+# Versão que a ferramenta vai utilizar
+apiVersion: v1
+
+# Tipo do arquivo (Deployment ou Service)
+kind: Service
+
+metadata:
+  name: flask-service
+
+spec:
+  # Link entre o service e o deployment
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: LoadBalancer
+```
+
+### Executar arquivo de service em modo declarativo
+
+O comando é igual ao arquivo de deployment
+
+```bash
+kubectl apply -f <caminho do arquivo>
+```
+
+### Parar service em modo declarativo
+
+```bash
+kubectl delete -f <nome do arquivo>
+```
+
+### Atualizar projeto em modo declarativo
+
+1. Criar nova versão da imagem
+2. Dar push no `Docker Hub`
+3. Alterar a tag da imagem no arquivo de deployment
+4. Usar o comando `apply` para aplicar as mudanças
+
+### Unir arquivos do modo declarativo
+
+Uma boa prática é escrever o service antes do deployment.
+
+```yaml
+---
+# Versão que a ferramenta vai utilizar
+apiVersion: v1
+
+# Tipo do arquivo (Deployment ou Service)
+kind: Service
+
+metadata:
+  name: flask-service
+
+spec:
+  # Link entre o service e o deployment
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: LoadBalancer
+
+---
+# Versão que a ferramenta vai utilizar
+apiVersion: apps/v1
+
+# Tipo do arquivo (Deployment ou Service)
+kind: Deployment
+
+metadata:
+  name: flask-app-deployment
+
+spec:
+  # Número de replicas
+  replicas: 4
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      # Especificação dos containers
+      containers:
+        - name: flask
+          image: danielgfavero/flask-kubernetes:2
+```
+
+> `---` separa o arquivo yaml em seções

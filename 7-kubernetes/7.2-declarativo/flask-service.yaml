@@ -1,0 +1,18 @@
+# Versão que a ferramenta vai utilizar
+apiVersion: v1
+
+# Tipo do arquivo (Deployment ou Service)
+kind: Service
+
+metadata:
+  name: flask-service
+
+spec:
+  # Link entre o service e o deployment
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: LoadBalancer
